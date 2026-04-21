@@ -31,3 +31,7 @@ Layers:
 
 * JWT-based authentication
 * Role-based authorization
+
+## Configuration Rules
+- Application configuration must not overwrite existing environment-specific values
+- Sensitive values (DB credentials) must always be preserved

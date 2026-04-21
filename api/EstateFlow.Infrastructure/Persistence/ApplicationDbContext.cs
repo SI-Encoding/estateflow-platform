@@ -24,6 +24,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.ToTable("Roles");
             entity.Property(role => role.Name).IsRequired().HasMaxLength(100);
+            entity.HasIndex(role => role.Name).IsUnique();
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -32,6 +33,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(user => user.FirstName).IsRequired().HasMaxLength(100);
             entity.Property(user => user.LastName).IsRequired().HasMaxLength(100);
             entity.Property(user => user.Email).IsRequired().HasMaxLength(256);
+            entity.Property(user => user.PasswordHash).IsRequired().HasMaxLength(200);
             entity.HasIndex(user => user.Email).IsUnique();
 
             entity.HasOne(user => user.Role)

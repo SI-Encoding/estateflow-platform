@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EstateFlow.Infrastructure",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EstateFlow.API", "EstateFlow.API\EstateFlow.API.csproj", "{680B8596-3E17-44FF-8714-60103C8DFFD4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EstateFlow.API.Tests", "EstateFlow.API.Tests\EstateFlow.API.Tests.csproj", "{42A35E65-43CE-4744-8096-5C8EE255FCDF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{680B8596-3E17-44FF-8714-60103C8DFFD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{680B8596-3E17-44FF-8714-60103C8DFFD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{680B8596-3E17-44FF-8714-60103C8DFFD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42A35E65-43CE-4744-8096-5C8EE255FCDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42A35E65-43CE-4744-8096-5C8EE255FCDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42A35E65-43CE-4744-8096-5C8EE255FCDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42A35E65-43CE-4744-8096-5C8EE255FCDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
