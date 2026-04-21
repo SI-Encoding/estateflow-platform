@@ -102,3 +102,35 @@ Frontend:
 * Reuse existing patterns in the repo
 * Keep components small and composable
 * Prefer clarity over cleverness
+
+## Known Gotchas (Important)
+
+### Do NOT overwrite existing configuration
+
+* Never modify existing connection strings in `appsettings.json` or `appsettings.Development.json`
+* Always preserve:
+
+  * Database name
+  * Username
+  * Password
+  * Host and port
+
+### When updating configuration:
+
+* Extend existing settings instead of replacing them
+* Only add new keys (e.g., Jwt settings), do not remove existing ones
+
+### Database Safety
+
+* Do NOT drop or recreate the database unless explicitly instructed
+* Do NOT reset migrations without confirmation
+
+### File Safety
+
+* Do NOT overwrite entire files unless necessary
+* Prefer incremental updates
+
+### General Rule
+
+If a file already contains user-defined values:
+→ Preserve them and build around them
