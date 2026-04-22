@@ -45,10 +45,13 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Property>(entity =>
         {
             entity.ToTable("Properties");
-            entity.Property(property => property.Title).IsRequired().HasMaxLength(200);
-            entity.Property(property => property.Description).HasMaxLength(2000);
             entity.Property(property => property.Address).IsRequired().HasMaxLength(300);
+            entity.Property(property => property.Description).IsRequired().HasMaxLength(2000);
+            entity.Property(property => property.Bedrooms).IsRequired();
+            entity.Property(property => property.Bathrooms).IsRequired();
+            entity.Property(property => property.PropertyType).IsRequired().HasMaxLength(100);
             entity.Property(property => property.Price).HasColumnType("numeric(18,2)");
+            entity.Property(property => property.CreatedAt).IsRequired();
 
             entity.HasOne(property => property.Agent)
                 .WithMany(user => user.Properties)

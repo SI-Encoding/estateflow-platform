@@ -1,9 +1,9 @@
-using EstateFlow.Domain.Common;
+namespace EstateFlow.Application.Properties.Dtos;
 
-namespace EstateFlow.Domain.Entities;
-
-public class Property : BaseEntity
+public class PropertyResponseDto
 {
+    public Guid Id { get; set; }
+
     public decimal Price { get; set; }
 
     public string Address { get; set; } = string.Empty;
@@ -16,7 +16,7 @@ public class Property : BaseEntity
 
     public string PropertyType { get; set; } = string.Empty;
 
-    public Guid AgentId { get; set; }
+    public DateTime CreatedAt { get; set; }
 
-    public User? Agent { get; set; }
+    public Guid AgentId { get; set; }
 }

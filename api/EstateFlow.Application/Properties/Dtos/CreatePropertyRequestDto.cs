@@ -1,8 +1,6 @@
-using EstateFlow.Domain.Common;
+namespace EstateFlow.Application.Properties.Dtos;
 
-namespace EstateFlow.Domain.Entities;
-
-public class Property : BaseEntity
+public class CreatePropertyRequestDto
 {
     public decimal Price { get; set; }
 
@@ -15,8 +13,4 @@ public class Property : BaseEntity
     public int Bathrooms { get; set; }
 
     public string PropertyType { get; set; } = string.Empty;
-
-    public Guid AgentId { get; set; }
-
-    public User? Agent { get; set; }
 }
