@@ -1,9 +1,12 @@
-
 import { useForm } from 'react-hook-form'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useLoginMutation } from '@/hooks/use-login-mutation'
+import { getApiErrorMessage } from '@/lib/api-error'
 import type { LoginRequest } from '@/types/auth'
 
 export function LoginForm() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const {
     register,
     handleSubmit,
@@ -19,6 +22,8 @@ export function LoginForm() {
 
   const onSubmit = handleSubmit(async (values) => {
     await loginMutation.mutateAsync(values)
+    const redirectTo = (location.state as { from?: string } | null)?.from ?? '/'
+    navigate(redirectTo, { replace: true })
   })
 
   return (
@@ -62,7 +67,10 @@ export function LoginForm() {
 
       {loginMutation.isError ? (
         <p className="rounded-2xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-          Unable to sign in. Check the backend API and your credentials.
+          {getApiErrorMessage(
+            loginMutation.error,
+            'Unable to sign in. Check the backend API and your credentials.',
+          )}
         </p>
       ) : null}
 
@@ -73,6 +81,17 @@ export function LoginForm() {
       >
         {loginMutation.isPending ? 'Signing in...' : 'Sign in to API'}
       </button>
+
+      <p className="text-sm text-slate-300">
+        Need an account?{' '}
+        <Link
+          className="text-amber-300 transition hover:text-amber-200"
+          to="/register"
+        >
+          Create one here
+        </Link>
+        .
+      </p>
     </form>
   )
 }

@@ -4,11 +4,7 @@ import { PropertyFilters } from '@/components/properties/PropertyFilters'
 import { usePropertiesQuery } from '@/hooks/use-properties-query'
 import type { PropertyFilters as PropertyFiltersType } from '@/types/property'
 
-interface HomePageProps {
-  isAuthenticated: boolean
-}
-
-export function HomePage({ isAuthenticated }: HomePageProps) {
+export function HomePage() {
   const [filters, setFilters] = useState<PropertyFiltersType>({
     pageNumber: 1,
     pageSize: 6,
@@ -33,9 +29,7 @@ export function HomePage({ isAuthenticated }: HomePageProps) {
             </h2>
           </div>
           <div className="text-sm text-slate-300">
-            {isAuthenticated
-              ? 'Authenticated requests are ready for protected actions.'
-              : 'Sign in to test protected write endpoints from the UI later.'}
+            Authenticated requests are ready for protected actions.
           </div>
         </div>
 
@@ -45,8 +39,7 @@ export function HomePage({ isAuthenticated }: HomePageProps) {
 
         {propertiesQuery.isError ? (
           <div className="mt-5 rounded-[1.5rem] border border-rose-400/20 bg-rose-500/10 p-5 text-sm text-rose-100">
-            Unable to load properties. Make sure the API is running at
-            {' '}
+            Unable to load properties. Make sure the API is running at{' '}
             <code>http://localhost:5055/api</code>.
           </div>
         ) : null}
