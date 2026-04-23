@@ -134,3 +134,25 @@ Frontend:
 
 If a file already contains user-defined values:
 → Preserve them and build around them
+
+### TypeScript Config Overwrite (tsconfig.*.json)
+
+Codex may overwrite `tsconfig.json` or `tsconfig.app.json` and remove custom compiler options.
+
+#### Rules:
+
+* Never overwrite existing tsconfig files
+* Always preserve:
+
+  * compilerOptions (including ignoreDeprecations, paths, baseUrl)
+  * strict settings
+  * module resolution settings
+
+#### When updating TypeScript config:
+
+* Extend existing config instead of replacing it
+* Only add new fields if missing
+
+#### Example:
+
+If "ignoreDeprecations": "6.0" exists → it must not be removed
