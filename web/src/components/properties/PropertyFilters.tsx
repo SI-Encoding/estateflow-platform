@@ -16,7 +16,6 @@ export function PropertyFilters({
       onChange({
         ...filters,
         [field]: event.target.value || undefined,
-        pageNumber: 1,
       })
     }
 
@@ -28,7 +27,6 @@ export function PropertyFilters({
       onChange({
         ...filters,
         [field]: value ? Number(value) : undefined,
-        pageNumber: 1,
       })
     }
 
@@ -37,7 +35,7 @@ export function PropertyFilters({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
         <div className="grid flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <label className="space-y-2 text-sm">
-            <span className="text-slate-300">Address</span>
+            <span className="text-slate-300">Location</span>
             <input
               value={filters.address ?? ''}
               onChange={handleTextChange('address')}
@@ -85,24 +83,20 @@ export function PropertyFilters({
           </label>
 
           <label className="space-y-2 text-sm">
-            <span className="text-slate-300">Sort</span>
+            <span className="text-slate-300">Page size</span>
             <select
-              value={`${filters.sortBy ?? 'createdAt'}:${filters.sortOrder ?? 'desc'}`}
-              onChange={(event) => {
-                const [sortBy, sortOrder] = event.target.value.split(':')
-
+              value={filters.pageSize ?? 6}
+              onChange={(event) =>
                 onChange({
                   ...filters,
-                  sortBy: sortBy as PropertyFiltersType['sortBy'],
-                  sortOrder: sortOrder as PropertyFiltersType['sortOrder'],
+                  pageSize: Number(event.target.value),
                 })
-              }}
+              }
               className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm text-white outline-none focus:border-amber-300/70"
             >
-              <option value="createdAt:desc">Newest first</option>
-              <option value="createdAt:asc">Oldest first</option>
-              <option value="price:asc">Price low to high</option>
-              <option value="price:desc">Price high to low</option>
+              <option value={6}>6</option>
+              <option value={12}>12</option>
+              <option value={24}>24</option>
             </select>
           </label>
         </div>
