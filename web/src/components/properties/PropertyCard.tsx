@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import type { Property } from '@/types/property'
 
 interface PropertyCardProps {
@@ -40,6 +41,15 @@ export function PropertyCard({ property }: PropertyCardProps) {
         <span className="rounded-full bg-white/6 px-3 py-1">
           Added {new Date(property.createdAt).toLocaleDateString()}
         </span>
+      </div>
+
+      <div className="mt-5">
+        <Link
+          to={`/properties/${property.id}`}
+          className="inline-flex rounded-full border border-amber-300/35 bg-amber-300/10 px-4 py-2 text-sm font-medium text-amber-200 transition hover:bg-amber-300/20"
+        >
+          View details
+        </Link>
       </div>
     </article>
   )
