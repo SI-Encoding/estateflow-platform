@@ -1,9 +1,11 @@
 import { Link, useParams } from 'react-router-dom'
 import { usePropertyQuery } from '@/hooks/use-property-query'
+import { useAuthStore } from '@/store/auth-store'
 
 export function PropertyDetailsPage() {
   const { propertyId = '' } = useParams()
   const propertyQuery = usePropertyQuery(propertyId)
+  const user = useAuthStore((state) => state.user)
 
   if (propertyQuery.isLoading) {
     return (
@@ -30,15 +32,28 @@ export function PropertyDetailsPage() {
   }
 
   const property = propertyQuery.data
+  const canEdit =
+    user?.role === 'Admin' ||
+    (user?.role === 'Agent' && user.id === property.agentId)
 
   return (
     <section className="space-y-5">
-      <Link
-        to="/properties"
-        className="inline-flex rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-stone-100 transition hover:bg-white/10"
-      >
-        Back to properties
-      </Link>
+      <div className="flex flex-wrap items-center gap-3">
+        <Link
+          to="/properties"
+          className="inline-flex rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-stone-100 transition hover:bg-white/10"
+        >
+          Back to properties
+        </Link>
+        {canEdit ? (
+          <Link
+            to={`/properties/${property.id}/edit`}
+            className="inline-flex rounded-full border border-amber-300/35 bg-amber-300/10 px-4 py-2 text-sm font-medium text-amber-200 transition hover:bg-amber-300/20"
+          >
+            Edit property
+          </Link>
+        ) : null}
+      </div>
 
       <article className="rounded-[1.75rem] border border-white/10 bg-slate-950/35 p-6 backdrop-blur">
         <div className="flex flex-col gap-5 border-b border-white/10 pb-6 lg:flex-row lg:items-start lg:justify-between">

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useAuthStore } from '@/store/auth-store'
 import { PropertyCard } from '@/components/properties/PropertyCard'
 import { PropertyFilters } from '@/components/properties/PropertyFilters'
 import { PropertyPagination } from '@/components/properties/PropertyPagination'
@@ -7,6 +9,7 @@ import type { PropertyFilters as PropertyFiltersType } from '@/types/property'
 
 export function PropertyListPage() {
   const [pageNumber, setPageNumber] = useState(1)
+  const user = useAuthStore((state) => state.user)
 
   const [filters, setFilters] = useState<PropertyFiltersType>({
     pageSize: 6,
@@ -49,8 +52,18 @@ export function PropertyListPage() {
               Browse active listings
             </h2>
           </div>
-          <div className="text-sm text-slate-300">
-            Filter by price, location, and property type.
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-slate-300">
+              Filter by price, location, and property type.
+            </div>
+            {user && (user.role === 'Agent' || user.role === 'Admin') ? (
+              <Link
+                to="/properties/create"
+                className="rounded-full bg-amber-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-200"
+              >
+                Create property
+              </Link>
+            ) : null}
           </div>
         </div>
 

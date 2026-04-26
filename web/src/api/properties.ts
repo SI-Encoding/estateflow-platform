@@ -1,5 +1,10 @@
 import { apiClient } from '@/api/client'
-import type { PagedResult, Property, PropertyFilters } from '@/types/property'
+import type {
+  PagedResult,
+  Property,
+  PropertyFilters,
+  PropertyFormValues,
+} from '@/types/property'
 
 export async function getProperties(
   filters: PropertyFilters,
@@ -13,5 +18,20 @@ export async function getProperties(
 
 export async function getPropertyById(id: string): Promise<Property> {
   const response = await apiClient.get<Property>(`/property/${id}`)
+  return response.data
+}
+
+export async function createProperty(
+  data: PropertyFormValues,
+): Promise<Property> {
+  const response = await apiClient.post<Property>('/property', data)
+  return response.data
+}
+
+export async function updateProperty(
+  id: string,
+  data: PropertyFormValues,
+): Promise<Property> {
+  const response = await apiClient.put<Property>(`/property/${id}`, data)
   return response.data
 }
