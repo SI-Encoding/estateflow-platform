@@ -1,7 +1,10 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { RoleProtectedRoute } from '@/components/auth/RoleProtectedRoute'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { PublicOnlyRoute } from '@/components/auth/PublicOnlyRoute'
 import { AppLayout } from '@/components/layout/AppLayout'
+import { CreatePropertyPage } from '@/pages/CreatePropertyPage'
+import { EditPropertyPage } from '@/pages/EditPropertyPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { PropertyDetailsPage } from '@/pages/PropertyDetailsPage'
 import { PropertyListPage } from '@/pages/PropertyListPage'
@@ -33,6 +36,22 @@ export function App() {
             <ProtectedRoute>
               <PropertyDetailsPage />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/properties/create"
+          element={
+            <RoleProtectedRoute allowedRoles={['Agent', 'Admin']}>
+              <CreatePropertyPage />
+            </RoleProtectedRoute>
+          }
+        />
+        <Route
+          path="/properties/:propertyId/edit"
+          element={
+            <RoleProtectedRoute allowedRoles={['Agent', 'Admin']}>
+              <EditPropertyPage />
+            </RoleProtectedRoute>
           }
         />
         <Route

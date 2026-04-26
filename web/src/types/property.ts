@@ -10,6 +10,15 @@ export interface Property {
   agentId: string
 }
 
+export interface PropertyFormValues {
+  price: number
+  address: string
+  description: string
+  bedrooms: number
+  bathrooms: number
+  propertyType: string
+}
+
 export interface PropertyFilters {
   minPrice?: number
   maxPrice?: number
