@@ -36,11 +36,44 @@ A full-stack real estate platform built with React and .NET 8, designed to simul
 
 ### Backend
 
+Before running the backend, ensure you have a PostgreSQL database created and configured.
+
+1. Create a database (example):
+
+```bash
+createdb estateflow
+```
+
+2. Update the connection string in:
+
+```
+api/EstateFlow.API/appsettings.Development.json
+```
+
+Example:
+
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Host=localhost;Port=5432;Database=estateflow;Username=postgres;Password=yourpassword"
+}
+```
+
+3. Apply database migrations:
+
 ```bash
 cd api
-dotnet restore
-dotnet run
+dotnet ef database update \
+  --project EstateFlow.Infrastructure \
+  --startup-project EstateFlow.API
 ```
+
+4. Run the API:
+
+```bash
+dotnet run --project EstateFlow.API
+```
+
+---
 
 ### Frontend
 
@@ -48,6 +81,16 @@ dotnet run
 cd web
 pnpm install
 pnpm dev
+```
+
+## Development Notes
+
+* If you encounter errors like `relation does not exist`, ensure migrations have been applied
+* Ensure PostgreSQL is running before starting the backend
+* You may need to install EF CLI tools:
+
+```bash
+dotnet tool install --global dotnet-ef
 ```
 
 ## Development Approach
