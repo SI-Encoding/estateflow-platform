@@ -9,6 +9,11 @@ public interface IPropertyService
         PropertyQueryDto query,
         CancellationToken cancellationToken = default);
 
+    Task<PagedResultDto<PropertyResponseDto>> GetMinePagedAsync(
+        Guid currentUserId,
+        PropertyQueryDto query,
+        CancellationToken cancellationToken = default);
+
     Task<PropertyResponseDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<PropertyResponseDto> CreateAsync(
@@ -28,5 +33,24 @@ public interface IPropertyService
         Guid id,
         Guid currentUserId,
         string currentUserRole,
+        CancellationToken cancellationToken = default);
+
+    Task SavePropertyAsync(
+        Guid propertyId,
+        Guid currentUserId,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> UnsavePropertyAsync(
+        Guid propertyId,
+        Guid currentUserId,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<PropertyResponseDto>> GetSavedPropertiesAsync(
+        Guid currentUserId,
+        CancellationToken cancellationToken = default);
+
+    Task<InquiryResponseDto> CreateInquiryAsync(
+        Guid propertyId,
+        InquiryRequestDto request,
         CancellationToken cancellationToken = default);
 }

@@ -27,6 +27,51 @@ public class PropertyController : ControllerBase
         return Ok(response);
     }
 
+    [Authorize(Roles = "Agent,Admin")]
+    [HttpGet("mine")]
+    [ProducesResponseType(typeof(PagedResultDto<PropertyResponseDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMine([FromQuery] PropertyQueryDto query, CancellationToken cancellationToken)
+    {
+        var response = await _propertyService.GetMinePagedAsync(GetCurrentUserId(), query, cancellationToken);
+        return Ok(response);
+    }
+
+    [Authorize]
+    [HttpGet("saved")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<PropertyResponseDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSaved(CancellationToken cancellationToken)
+    {
+        var response = await _propertyService.GetSavedPropertiesAsync(GetCurrentUserId(), cancellationToken);
+        return Ok(response);
+    }
+
+    [Authorize]
+    [HttpPost("{id:guid}/save")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Save(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _propertyService.SavePropertyAsync(id, GetCurrentUserId(), cancellationToken);
+            return NoContent();
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("{id:guid}/save")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Unsave(Guid id, CancellationToken cancellationToken)
+    {
+        var removed = await _propertyService.UnsavePropertyAsync(id, GetCurrentUserId(), cancellationToken);
+        return removed ? NoContent() : NotFound();
+    }
+
     [AllowAnonymous]
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(PropertyResponseDto), StatusCodes.Status200OK)]
@@ -113,6 +158,23 @@ public class PropertyController : ControllerBase
         catch (UnauthorizedAccessException)
         {
             return Forbid();
+        }
+    }
+
+    [AllowAnonymous]
+    [HttpPost("{id:guid}/inquiries")]
+    [ProducesResponseType(typeof(InquiryResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateInquiry(Guid id, InquiryRequestDto request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await _propertyService.CreateInquiryAsync(id, request, cancellationToken);
+            return CreatedAtAction(nameof(GetById), new { id }, response);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
         }
     }
 

@@ -5,6 +5,7 @@ export function Header() {
   const user = useAuthStore((state) => state.user)
   const clearSession = useAuthStore((state) => state.clearSession)
   const navigate = useNavigate()
+  const canManageProperties = user?.role === 'Agent' || user?.role === 'Admin'
 
   function handleSignOut() {
     clearSession()
@@ -40,7 +41,7 @@ export function Header() {
         <div className="flex flex-col gap-3 self-start md:items-end md:self-end">
           <nav className="flex flex-wrap items-center gap-2 text-sm">
             <NavLink
-              to="/"
+              to="/properties"
               className={({ isActive }) =>
                 `rounded-full px-4 py-2 transition ${
                   isActive
@@ -49,8 +50,36 @@ export function Header() {
                 }`
               }
             >
-              Dashboard
+              Properties
             </NavLink>
+            {user ? (
+              <NavLink
+                to="/saved-properties"
+                className={({ isActive }) =>
+                  `rounded-full px-4 py-2 transition ${
+                    isActive
+                      ? 'bg-amber-300 text-slate-950'
+                      : 'border border-white/10 bg-white/5 text-stone-100 hover:bg-white/10'
+                  }`
+                }
+              >
+                Saved
+              </NavLink>
+            ) : null}
+            {canManageProperties ? (
+              <NavLink
+                to="/agent-dashboard"
+                className={({ isActive }) =>
+                  `rounded-full px-4 py-2 transition ${
+                    isActive
+                      ? 'bg-amber-300 text-slate-950'
+                      : 'border border-white/10 bg-white/5 text-stone-100 hover:bg-white/10'
+                  }`
+                }
+              >
+                Dashboard
+              </NavLink>
+            ) : null}
             {!user ? (
               <>
                 <NavLink

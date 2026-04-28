@@ -17,4 +17,6 @@ public class User : BaseEntity
     public Role? Role { get; set; }
 
     public ICollection<Property> Properties { get; set; } = new List<Property>();
+
+    public ICollection<SavedProperty> SavedProperties { get; set; } = new List<SavedProperty>();
 }

@@ -37,3 +37,18 @@ export interface PagedResult<T> {
   totalCount: number
   totalPages: number
 }
+
+export interface InquiryFormValues {
+  name: string
+  email: string
+  message: string
+}
+
+export interface InquiryResponse {
+  id: string
+  propertyId: string
+  name: string
+  email: string
+  message: string
+  createdAt: string
+}
