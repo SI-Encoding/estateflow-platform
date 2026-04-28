@@ -1,11 +1,13 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import type { Property } from '@/types/property'
 
 interface PropertyCardProps {
   property: Property
+  action?: ReactNode
 }
 
-export function PropertyCard({ property }: PropertyCardProps) {
+export function PropertyCard({ property, action }: PropertyCardProps) {
   return (
     <article className="rounded-[1.75rem] border border-white/10 bg-slate-950/50 p-5 shadow-[0_16px_50px_rgba(0,0,0,0.18)] backdrop-blur">
       <div className="flex items-start justify-between gap-4">
@@ -43,13 +45,14 @@ export function PropertyCard({ property }: PropertyCardProps) {
         </span>
       </div>
 
-      <div className="mt-5">
+      <div className="mt-5 flex flex-wrap items-center gap-3">
         <Link
           to={`/properties/${property.id}`}
           className="inline-flex rounded-full border border-amber-300/35 bg-amber-300/10 px-4 py-2 text-sm font-medium text-amber-200 transition hover:bg-amber-300/20"
         >
           View details
         </Link>
+        {action}
       </div>
     </article>
   )

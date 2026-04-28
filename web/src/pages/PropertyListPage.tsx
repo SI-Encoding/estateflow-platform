@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { SavePropertyButton } from '@/components/properties/SavePropertyButton'
 import { useAuthStore } from '@/store/auth-store'
 import { PropertyCard } from '@/components/properties/PropertyCard'
 import { PropertyFilters } from '@/components/properties/PropertyFilters'
 import { PropertyPagination } from '@/components/properties/PropertyPagination'
 import { usePropertiesQuery } from '@/hooks/use-properties-query'
+import { useSavePropertyMutation } from '@/hooks/use-save-property-mutation'
+import { useSavedPropertiesQuery } from '@/hooks/use-saved-properties-query'
+import { useUnsavePropertyMutation } from '@/hooks/use-unsave-property-mutation'
 import type { PropertyFilters as PropertyFiltersType } from '@/types/property'
 
 export function PropertyListPage() {
@@ -19,12 +23,27 @@ export function PropertyListPage() {
 
   function handleFiltersChange(nextFilters: PropertyFiltersType) {
     setFilters(nextFilters)
-    setPageNumber(1) // ✅ reset page when filters change
+    setPageNumber(1)
   }
 
   const propertiesQuery = usePropertiesQuery(filters, pageNumber)
+  const savedPropertiesQuery = useSavedPropertiesQuery(Boolean(user))
+  const saveMutation = useSavePropertyMutation()
+  const unsaveMutation = useUnsavePropertyMutation()
 
-  // ✅ Clamp pageNumber if it exceeds totalPages from backend
+  const savedPropertyIds = new Set(
+    savedPropertiesQuery.data?.map((property) => property.id) ?? [],
+  )
+
+  async function handleToggleSave(propertyId: string, isSaved: boolean) {
+    if (isSaved) {
+      await unsaveMutation.mutateAsync(propertyId)
+      return
+    }
+
+    await saveMutation.mutateAsync(propertyId)
+  }
+
   useEffect(() => {
     if (propertiesQuery.data) {
       const totalPages = propertiesQuery.data.totalPages || 1
@@ -67,47 +86,57 @@ export function PropertyListPage() {
           </div>
         </div>
 
-        {/* Loading */}
-        {propertiesQuery.isLoading && (
+        {propertiesQuery.isLoading ? (
           <div className="py-12 text-sm text-slate-300">
             Loading properties...
           </div>
-        )}
+        ) : null}
 
-        {/* Error */}
-        {propertiesQuery.isError && (
+        {propertiesQuery.isError ? (
           <div className="mt-5 rounded-[1.5rem] border border-rose-400/20 bg-rose-500/10 p-5 text-sm text-rose-100">
             Unable to load properties. Make sure the API is running at{' '}
             <code>http://localhost:5055/api</code>.
           </div>
-        )}
+        ) : null}
 
-        {/* Data */}
-        {propertiesQuery.data && (
+        {propertiesQuery.data ? (
           <div className="mt-6 space-y-6">
             <div className="flex flex-col gap-2 text-sm text-slate-300 sm:flex-row sm:items-center sm:justify-between">
               <span>
-                {propertiesQuery.data.totalCount} listings · page{' '}
-                {safePageNumber} of {totalPages}
+                {propertiesQuery.data.totalCount} listings · page {safePageNumber}{' '}
+                of {totalPages}
               </span>
               <span>Server state powered by TanStack Query</span>
             </div>
 
-            {/* Grid */}
             <div className="grid gap-4 lg:grid-cols-2">
-              {propertiesQuery.data.items.map((property) => (
-                <PropertyCard key={property.id} property={property} />
-              ))}
+              {propertiesQuery.data.items.map((property) => {
+                const isSaved = savedPropertyIds.has(property.id)
+
+                return (
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    action={
+                      <SavePropertyButton
+                        isSaved={isSaved}
+                        isPending={
+                          saveMutation.isPending || unsaveMutation.isPending
+                        }
+                        onClick={() => handleToggleSave(property.id, isSaved)}
+                      />
+                    }
+                  />
+                )
+              })}
             </div>
 
-            {/* Empty state */}
-            {propertiesQuery.data.items.length === 0 && (
+            {propertiesQuery.data.items.length === 0 ? (
               <div className="rounded-[1.5rem] border border-dashed border-white/10 px-5 py-10 text-center text-sm text-slate-400">
                 No properties matched the current filters.
               </div>
-            )}
+            ) : null}
 
-            {/* Pagination */}
             <PropertyPagination
               pageNumber={safePageNumber}
               totalPages={totalPages}
@@ -115,13 +144,11 @@ export function PropertyListPage() {
                 setPageNumber((current) => Math.max(current - 1, 1))
               }
               onNext={() =>
-                setPageNumber((current) =>
-                  Math.min(current + 1, totalPages)
-                )
+                setPageNumber((current) => Math.min(current + 1, totalPages))
               }
             />
           </div>
-        )}
+        ) : null}
       </div>
     </section>
   )

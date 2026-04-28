@@ -16,6 +16,10 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Property> Properties => Set<Property>();
 
+    public DbSet<SavedProperty> SavedProperties => Set<SavedProperty>();
+
+    public DbSet<Inquiry> Inquiries => Set<Inquiry>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -57,6 +61,35 @@ public class ApplicationDbContext : DbContext
                 .WithMany(user => user.Properties)
                 .HasForeignKey(property => property.AgentId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<SavedProperty>(entity =>
+        {
+            entity.ToTable("SavedProperties");
+            entity.HasIndex(savedProperty => new { savedProperty.UserId, savedProperty.PropertyId }).IsUnique();
+
+            entity.HasOne(savedProperty => savedProperty.User)
+                .WithMany(user => user.SavedProperties)
+                .HasForeignKey(savedProperty => savedProperty.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(savedProperty => savedProperty.Property)
+                .WithMany(property => property.SavedByUsers)
+                .HasForeignKey(savedProperty => savedProperty.PropertyId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Inquiry>(entity =>
+        {
+            entity.ToTable("Inquiries");
+            entity.Property(inquiry => inquiry.Name).IsRequired().HasMaxLength(200);
+            entity.Property(inquiry => inquiry.Email).IsRequired().HasMaxLength(256);
+            entity.Property(inquiry => inquiry.Message).IsRequired().HasMaxLength(4000);
+
+            entity.HasOne(inquiry => inquiry.Property)
+                .WithMany(property => property.Inquiries)
+                .HasForeignKey(inquiry => inquiry.PropertyId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

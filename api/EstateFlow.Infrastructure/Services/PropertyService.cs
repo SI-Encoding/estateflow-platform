@@ -21,61 +21,20 @@ public class PropertyService : IPropertyService
         PropertyQueryDto query,
         CancellationToken cancellationToken = default)
     {
-        var pageNumber = query.PageNumber < 1 ? 1 : query.PageNumber;
-        var pageSize = query.PageSize < 1 ? 10 : Math.Min(query.PageSize, 100);
-
         IQueryable<Property> properties = _dbContext.Properties.AsNoTracking();
+        return await BuildPagedResultAsync(properties, query, cancellationToken);
+    }
 
-        if (query.MinPrice.HasValue)
-        {
-            properties = properties.Where(property => property.Price >= query.MinPrice.Value);
-        }
+    public async Task<PagedResultDto<PropertyResponseDto>> GetMinePagedAsync(
+        Guid currentUserId,
+        PropertyQueryDto query,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<Property> properties = _dbContext.Properties
+            .AsNoTracking()
+            .Where(property => property.AgentId == currentUserId);
 
-        if (query.MaxPrice.HasValue)
-        {
-            properties = properties.Where(property => property.Price <= query.MaxPrice.Value);
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.Address))
-        {
-            var address = query.Address.Trim().ToLower();
-            properties = properties.Where(property => property.Address.ToLower().Contains(address));
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.PropertyType))
-        {
-            var propertyType = query.PropertyType.Trim().ToLower();
-            properties = properties.Where(property => property.PropertyType.ToLower() == propertyType);
-        }
-
-        properties = ApplySorting(properties, query.SortBy, query.SortOrder);
-
-        var totalCount = await properties.CountAsync(cancellationToken);
-        var items = await properties
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .Select(property => new PropertyResponseDto
-            {
-                Id = property.Id,
-                Price = property.Price,
-                Address = property.Address,
-                Description = property.Description,
-                Bedrooms = property.Bedrooms,
-                Bathrooms = property.Bathrooms,
-                PropertyType = property.PropertyType,
-                CreatedAt = property.CreatedAt,
-                AgentId = property.AgentId
-            })
-            .ToListAsync(cancellationToken);
-
-        return new PagedResultDto<PropertyResponseDto>
-        {
-            Items = items,
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-            TotalCount = totalCount,
-            TotalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize)
-        };
+        return await BuildPagedResultAsync(properties, query, cancellationToken);
     }
 
     public async Task<PropertyResponseDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -180,6 +139,173 @@ public class PropertyService : IPropertyService
         return true;
     }
 
+    public async Task SavePropertyAsync(
+        Guid propertyId,
+        Guid currentUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var propertyExists = await _dbContext.Properties.AnyAsync(property => property.Id == propertyId, cancellationToken);
+
+        if (!propertyExists)
+        {
+            throw new InvalidOperationException("Property was not found.");
+        }
+
+        var alreadySaved = await _dbContext.SavedProperties
+            .AnyAsync(savedProperty => savedProperty.PropertyId == propertyId && savedProperty.UserId == currentUserId, cancellationToken);
+
+        if (alreadySaved)
+        {
+            return;
+        }
+
+        _dbContext.SavedProperties.Add(new SavedProperty
+        {
+            PropertyId = propertyId,
+            UserId = currentUserId
+        });
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<bool> UnsavePropertyAsync(
+        Guid propertyId,
+        Guid currentUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var savedProperty = await _dbContext.SavedProperties
+            .FirstOrDefaultAsync(candidate => candidate.PropertyId == propertyId && candidate.UserId == currentUserId, cancellationToken);
+
+        if (savedProperty is null)
+        {
+            return false;
+        }
+
+        _dbContext.SavedProperties.Remove(savedProperty);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+
+    public async Task<IReadOnlyCollection<PropertyResponseDto>> GetSavedPropertiesAsync(
+        Guid currentUserId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.SavedProperties
+            .AsNoTracking()
+            .Where(savedProperty => savedProperty.UserId == currentUserId)
+            .Select(savedProperty => new PropertyResponseDto
+            {
+                Id = savedProperty.Property!.Id,
+                Price = savedProperty.Property.Price,
+                Address = savedProperty.Property.Address,
+                Description = savedProperty.Property.Description,
+                Bedrooms = savedProperty.Property.Bedrooms,
+                Bathrooms = savedProperty.Property.Bathrooms,
+                PropertyType = savedProperty.Property.PropertyType,
+                CreatedAt = savedProperty.Property.CreatedAt,
+                AgentId = savedProperty.Property.AgentId
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<InquiryResponseDto> CreateInquiryAsync(
+        Guid propertyId,
+        InquiryRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateInquiryRequest(request);
+
+        var propertyExists = await _dbContext.Properties.AnyAsync(property => property.Id == propertyId, cancellationToken);
+
+        if (!propertyExists)
+        {
+            throw new InvalidOperationException("Property was not found.");
+        }
+
+        var inquiry = new Inquiry
+        {
+            PropertyId = propertyId,
+            Name = request.Name.Trim(),
+            Email = request.Email.Trim(),
+            Message = request.Message.Trim(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _dbContext.Inquiries.Add(inquiry);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return new InquiryResponseDto
+        {
+            Id = inquiry.Id,
+            PropertyId = inquiry.PropertyId,
+            Name = inquiry.Name,
+            Email = inquiry.Email,
+            Message = inquiry.Message,
+            CreatedAt = inquiry.CreatedAt
+        };
+    }
+
+    private static async Task<PagedResultDto<PropertyResponseDto>> BuildPagedResultAsync(
+        IQueryable<Property> properties,
+        PropertyQueryDto query,
+        CancellationToken cancellationToken)
+    {
+        var pageNumber = query.PageNumber < 1 ? 1 : query.PageNumber;
+        var pageSize = query.PageSize < 1 ? 10 : Math.Min(query.PageSize, 100);
+
+        if (query.MinPrice.HasValue)
+        {
+            properties = properties.Where(property => property.Price >= query.MinPrice.Value);
+        }
+
+        if (query.MaxPrice.HasValue)
+        {
+            properties = properties.Where(property => property.Price <= query.MaxPrice.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Address))
+        {
+            var address = query.Address.Trim().ToLower();
+            properties = properties.Where(property => property.Address.ToLower().Contains(address));
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.PropertyType))
+        {
+            var propertyType = query.PropertyType.Trim().ToLower();
+            properties = properties.Where(property => property.PropertyType.ToLower() == propertyType);
+        }
+
+        properties = ApplySorting(properties, query.SortBy, query.SortOrder);
+
+        var totalCount = await properties.CountAsync(cancellationToken);
+        var items = await properties
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(property => new PropertyResponseDto
+            {
+                Id = property.Id,
+                Price = property.Price,
+                Address = property.Address,
+                Description = property.Description,
+                Bedrooms = property.Bedrooms,
+                Bathrooms = property.Bathrooms,
+                PropertyType = property.PropertyType,
+                CreatedAt = property.CreatedAt,
+                AgentId = property.AgentId
+            })
+            .ToListAsync(cancellationToken);
+
+        return new PagedResultDto<PropertyResponseDto>
+        {
+            Items = items,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize)
+        };
+    }
+
     private static IQueryable<Property> ApplySorting(IQueryable<Property> properties, string? sortBy, string? sortOrder)
     {
         var normalizedSortBy = sortBy?.Trim().ToLowerInvariant();
@@ -243,6 +369,24 @@ public class PropertyService : IPropertyService
         if (string.IsNullOrWhiteSpace(propertyType))
         {
             throw new InvalidOperationException("Property type is required.");
+        }
+    }
+
+    private static void ValidateInquiryRequest(InquiryRequestDto request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new InvalidOperationException("Name is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+        {
+            throw new InvalidOperationException("Email is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Message))
+        {
+            throw new InvalidOperationException("Message is required.");
         }
     }
 
