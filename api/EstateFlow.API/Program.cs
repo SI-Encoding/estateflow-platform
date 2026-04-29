@@ -63,22 +63,35 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddInfrastructure(builder.Configuration);
 
+var allowedOrigins = builder.Configuration["AllowedOrigins"]?.Split(',');
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        if (allowedOrigins != null && allowedOrigins.Length > 0)
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins(allowedOrigins)
                   .AllowAnyHeader()
                   .AllowAnyMethod();
-        });
+        }
+        else
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
+    });
 });
 
-builder.WebHost.ConfigureKestrel(options =>
+if (!builder.Environment.IsDevelopment())
 {
-    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-    options.ListenAnyIP(int.Parse(port));
-});
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+        options.ListenAnyIP(int.Parse(port));
+    });
+}
 
 var app = builder.Build();
 
