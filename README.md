@@ -34,6 +34,16 @@ A full-stack real estate platform built with React and .NET 8, designed to simul
 
 ## Getting Started
 
+### Docker
+
+Ensure you have Docker Desktop App installed and running.
+
+Run the backend and database with one command:
+
+```bash
+docker compose up --build
+```
+
 ### Backend
 
 Before running the backend, ensure you have a PostgreSQL database created and configured.
